@@ -18,6 +18,10 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'brain.head.profile': 'psychology',
+  'figure.walk': 'directions-walk',
+  'trophy.fill': 'emoji-events',
+  'chart.line.uptrend.xyaxis': 'show-chart',
 } as IconMapping;
 
 /**
