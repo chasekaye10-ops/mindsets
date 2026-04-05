@@ -1,9 +1,11 @@
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { ProtocolIcon } from '@/components/protocol-icon';
-import { walkingMeditations, cognitiveWorkouts } from '@/data/protocols';
+import { walkingMeditations, cognitiveWorkouts, Protocol } from '@/data/protocols';
 
 export default function MoveScreen() {
   const colorScheme = useColorScheme();
@@ -11,47 +13,70 @@ export default function MoveScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.header, { color: colors.text }]}>Move Your Body</Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.header, { color: colors.text }]}>Move</Text>
         <Text style={[styles.subheader, { color: colors.textMuted }]}>
           Physical training that sharpens your mind
         </Text>
 
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>
-          Walking Meditations
-        </Text>
+        <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>WALKING MEDITATIONS</Text>
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
         {walkingMeditations.map((item) => (
           <Pressable
             key={item.id}
-            style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            style={[styles.card, { backgroundColor: colors.surface }]}
+            onPress={() => item.audio
+              ? router.push({ pathname: '/session/audio', params: { id: item.id } } as any)
+              : null
+            }>
             <ProtocolIcon name={item.iconName} />
             <View style={styles.cardText}>
+              <View style={styles.cardTopRow}>
+                <Text style={[styles.cardDuration, { color: colors.primary }]}>
+                  {item.duration} MIN
+                </Text>
+                {item.audio && (
+                  <MaterialCommunityIcons name="headphones" size={16} color={colors.primary} />
+                )}
+              </View>
               <Text style={[styles.cardTitle, { color: colors.text }]}>{item.name}</Text>
               <Text style={[styles.cardSubtitle, { color: colors.textMuted }]}>
-                {item.duration} min — {item.description}
+                {item.description}
               </Text>
             </View>
           </Pressable>
         ))}
 
-        <Text style={[styles.sectionTitle, { color: colors.primary, marginTop: Spacing.lg }]}>
-          Cognitive Workouts
+        <Text style={[styles.sectionLabel, { color: colors.textMuted, marginTop: Spacing.xl }]}>
+          COGNITIVE WORKOUTS
         </Text>
-        <Text style={[styles.sectionDesc, { color: colors.textMuted }]}>
-          Exercises proven to boost brain function
-        </Text>
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
         {cognitiveWorkouts.map((item) => (
           <Pressable
             key={item.id}
-            style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            style={[styles.card, { backgroundColor: colors.surface }]}
+            onPress={() => item.audio
+              ? router.push({ pathname: '/session/audio', params: { id: item.id } } as any)
+              : null
+            }>
             <ProtocolIcon name={item.iconName} />
             <View style={styles.cardText}>
+              <View style={styles.cardTopRow}>
+                <Text style={[styles.cardDuration, { color: colors.primary }]}>
+                  {item.duration} MIN
+                </Text>
+                {item.audio && (
+                  <MaterialCommunityIcons name="headphones" size={16} color={colors.primary} />
+                )}
+              </View>
               <Text style={[styles.cardTitle, { color: colors.text }]}>{item.name}</Text>
               <Text style={[styles.cardSubtitle, { color: colors.textMuted }]}>
                 {item.description}
               </Text>
-              <Text style={[styles.whyText, { color: colors.accent }]}>
-                Brain benefit: {item.brainBenefit}
+              <Text style={[styles.benefit, { color: colors.textSecondary }]}>
+                {item.brainBenefit}
               </Text>
             </View>
           </Pressable>
@@ -63,22 +88,42 @@ export default function MoveScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: Spacing.lg, paddingTop: Spacing.xl },
-  header: { fontSize: 28, fontWeight: '700', marginBottom: Spacing.xs },
-  subheader: { fontSize: 16, marginBottom: Spacing.xl },
-  sectionTitle: { fontSize: 20, fontWeight: '600', marginBottom: Spacing.sm },
-  sectionDesc: { fontSize: 14, marginBottom: Spacing.md },
+  content: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: 120 },
+  header: { fontSize: 34, fontWeight: '800', marginBottom: Spacing.xs },
+  subheader: { fontSize: 15, marginBottom: Spacing.xl },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+    marginBottom: Spacing.sm,
+  },
+  divider: { height: 1, marginBottom: Spacing.lg },
   card: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
+    borderRadius: BorderRadius.xl,
     marginBottom: Spacing.md,
     gap: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
   cardText: { flex: 1 },
-  cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 2 },
-  cardSubtitle: { fontSize: 14, marginBottom: 4 },
-  whyText: { fontSize: 13, fontWeight: '500' },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 2,
+  },
+  cardDuration: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+  },
+  cardTitle: { fontSize: 20, fontWeight: '700', marginBottom: 4 },
+  cardSubtitle: { fontSize: 14, lineHeight: 20, marginBottom: 4 },
+  benefit: { fontSize: 13, fontStyle: 'italic', lineHeight: 19 },
 });

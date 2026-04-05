@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getDB } from '@/db/schema';
@@ -18,11 +19,8 @@ export default function ChallengesScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => {
-    loadChallenges();
-  }, []);
+  useEffect(() => { loadChallenges(); }, []);
 
   async function loadChallenges() {
     try {
@@ -31,9 +29,7 @@ export default function ChallengesScreen() {
         'SELECT * FROM challenges ORDER BY scheduled_start DESC LIMIT 20'
       );
       setChallenges(rows);
-    } catch {
-      // DB not ready yet
-    }
+    } catch {}
   }
 
   async function createQuickChallenge(minutes: number) {
@@ -53,64 +49,63 @@ export default function ChallengesScreen() {
     loadChallenges();
   }
 
-  const quickOptions = [15, 30, 60, 120];
+  const quickOptions = [
+    { min: 15, label: '15m' },
+    { min: 30, label: '30m' },
+    { min: 60, label: '1h' },
+    { min: 120, label: '2h' },
+  ];
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={[styles.header, { color: colors.text }]}>Challenges</Text>
         <Text style={[styles.subheader, { color: colors.textMuted }]}>
-          Schedule phone-free blocks and build accountability
+          Put your phone down and build accountability
         </Text>
 
-        <Text style={[styles.sectionTitle, { color: colors.primary }]}>Quick Challenge</Text>
-        <Text style={[styles.sectionDesc, { color: colors.textMuted }]}>
-          Put your phone down right now
-        </Text>
-        <View style={styles.quickRow}>
-          {quickOptions.map((min) => (
+        <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>QUICK CHALLENGE</Text>
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
+        <View style={styles.quickGrid}>
+          {quickOptions.map((opt) => (
             <Pressable
-              key={min}
-              style={[styles.quickBtn, { backgroundColor: colors.primary }]}
-              onPress={() => createQuickChallenge(min)}>
-              <Text style={styles.quickBtnText}>
-                {min >= 60 ? `${min / 60}h` : `${min}m`}
-              </Text>
+              key={opt.min}
+              style={[styles.quickCard, { backgroundColor: colors.surface }]}
+              onPress={() => createQuickChallenge(opt.min)}>
+              <Text style={[styles.quickValue, { color: colors.primary }]}>{opt.label}</Text>
+              <Text style={[styles.quickLabel, { color: colors.textMuted }]}>PHONE FREE</Text>
             </Pressable>
           ))}
         </View>
 
-        <Text style={[styles.sectionTitle, { color: colors.primary, marginTop: Spacing.xl }]}>
-          Your Challenges
+        <Text style={[styles.sectionLabel, { color: colors.textMuted, marginTop: Spacing.xl }]}>
+          HISTORY
         </Text>
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
+
         {challenges.length === 0 ? (
-          <View style={[styles.emptyState, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.emptyCard, { backgroundColor: colors.surface }]}>
             <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-              No challenges yet. Start one above!
+              No challenges yet. Start one above.
             </Text>
           </View>
         ) : (
           challenges.map((c) => (
             <View
               key={c.id}
-              style={[
-                styles.challengeCard,
-                {
-                  backgroundColor: colors.surface,
-                  borderColor: c.completed ? colors.success : colors.border,
-                },
-              ]}>
-              <View style={styles.challengeInfo}>
-                <Text style={[styles.challengeTitle, { color: colors.text }]}>
-                  {c.completed ? '✓ ' : ''}{c.title}
-                </Text>
-                <Text style={[styles.challengeTime, { color: colors.textMuted }]}>
-                  {new Date(c.scheduled_start).toLocaleDateString()} — {c.duration_minutes} min
+              style={[styles.historyCard, { backgroundColor: colors.surface }]}>
+              <View style={styles.historyInfo}>
+                <Text style={[styles.historyTitle, { color: colors.text }]}>{c.title}</Text>
+                <Text style={[styles.historyDate, { color: colors.textMuted }]}>
+                  {new Date(c.scheduled_start).toLocaleDateString()}
                 </Text>
               </View>
-              {!c.completed && (
+              {c.completed ? (
+                <MaterialCommunityIcons name="check-circle" size={28} color={colors.success} />
+              ) : (
                 <Pressable
-                  style={[styles.doneBtn, { backgroundColor: colors.success }]}
+                  style={[styles.doneBtn, { backgroundColor: colors.primary }]}
                   onPress={() => completeChallenge(c.id)}>
                   <Text style={styles.doneBtnText}>Done</Text>
                 </Pressable>
@@ -125,41 +120,63 @@ export default function ChallengesScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: Spacing.lg, paddingTop: Spacing.xl },
-  header: { fontSize: 28, fontWeight: '700', marginBottom: Spacing.xs },
-  subheader: { fontSize: 16, marginBottom: Spacing.xl },
-  sectionTitle: { fontSize: 20, fontWeight: '600', marginBottom: Spacing.xs },
-  sectionDesc: { fontSize: 14, marginBottom: Spacing.md },
-  quickRow: { flexDirection: 'row', gap: Spacing.sm },
-  quickBtn: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  quickBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  emptyState: {
-    padding: Spacing.xl,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    alignItems: 'center',
-  },
-  emptyText: { fontSize: 15 },
-  challengeCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
+  content: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: 120 },
+  header: { fontSize: 34, fontWeight: '800', marginBottom: Spacing.xs },
+  subheader: { fontSize: 15, marginBottom: Spacing.xl },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.5,
     marginBottom: Spacing.sm,
   },
-  challengeInfo: { flex: 1 },
-  challengeTitle: { fontSize: 16, fontWeight: '600', marginBottom: 2 },
-  challengeTime: { fontSize: 13 },
+  divider: { height: 1, marginBottom: Spacing.lg },
+  quickGrid: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  quickCard: {
+    flex: 1,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  quickValue: { fontSize: 24, fontWeight: '800', marginBottom: 2 },
+  quickLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  emptyCard: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xxl,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  emptyText: { fontSize: 15 },
+  historyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.lg,
+    marginBottom: Spacing.sm,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  historyInfo: { flex: 1 },
+  historyTitle: { fontSize: 16, fontWeight: '600', marginBottom: 2 },
+  historyDate: { fontSize: 13 },
   doneBtn: {
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.full,
   },
-  doneBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
+  doneBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
 });

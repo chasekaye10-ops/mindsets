@@ -13,7 +13,8 @@
       "bundleIdentifier": "com.mindsets.app",
       "buildNumber": "1",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "This allows us to improve your experience."
+        "NSUserTrackingUsageDescription": "This allows us to improve your experience.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -50,9 +51,17 @@
       "reactCompiler": true
     },
     "extra": {
+      "router": {},
       "eas": {
-        "projectId": "YOUR_EAS_PROJECT_ID"
+        "projectId": "6e7d8562-c612-4494-9260-1370c1b1d626"
       }
+    },
+    "owner": "ckspikeit9",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6e7d8562-c612-4494-9260-1370c1b1d626"
     }
   }
 }

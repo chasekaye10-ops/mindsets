@@ -7,6 +7,7 @@ export interface Protocol {
   duration: number; // minutes
   iconName: string; // MaterialCommunityIcons name
   brainBenefit?: string;
+  audio?: any; // require() asset or null
 }
 
 // === FOCUS PROTOCOLS ===
@@ -82,12 +83,13 @@ export const walkingMeditations: Protocol[] = [
   {
     id: 'mindful-walk',
     category: 'walk',
-    name: 'Mindful Walk',
-    description: 'Notice your body, breath, and surroundings',
+    name: 'Walking with Awareness',
+    description: 'Guided meditation for mindful walking',
     instructions:
-      'Walk at a natural pace. Focus on the sensation of your feet hitting the ground. Notice the air on your skin. When your mind wanders, return to physical sensations.',
+      'Follow the audio guide as you walk. Notice your body, breath, and surroundings. When your mind wanders, the guide will bring you back.',
     duration: 10,
     iconName: 'walk',
+    audio: require('@/assets/audio/walking-with-awareness.mp3'),
   },
   {
     id: 'optic-flow-walk',
@@ -150,11 +152,12 @@ export const cognitiveWorkouts: Protocol[] = [
     id: 'nsdr',
     category: 'cognitive',
     name: 'NSDR (Non-Sleep Deep Rest)',
-    description: 'Yoga Nidra-style body scan for recovery',
+    description: '10-min guided protocol by Dr. Andrew Huberman',
     instructions:
-      'Lie down. Close your eyes. Systematically relax each body part from toes to head. Follow along with a guided NSDR recording if available. This restores mental energy without sleep.',
-    duration: 20,
+      'Lie down. Close your eyes. Follow the audio guide as it walks you through a body scan to restore mental and physical energy.',
+    duration: 10,
     iconName: 'power-sleep',
     brainBenefit: 'Restores dopamine levels in the basal ganglia — resets your focus capacity',
+    audio: require('@/assets/audio/nsdr-10min.mp3'),
   },
 ];

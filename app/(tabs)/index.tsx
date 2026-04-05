@@ -10,6 +10,7 @@ interface TrainCard {
   subtitle: string;
   iconName: string;
   route: string;
+  duration: string;
 }
 
 const trainCards: TrainCard[] = [
@@ -18,20 +19,31 @@ const trainCards: TrainCard[] = [
     subtitle: 'Train your attention with visual focus drills',
     iconName: 'crosshairs-gps',
     route: '/train/focus',
+    duration: '5 – 90 MIN',
   },
   {
     title: 'Boredom Sit',
     subtitle: 'Build tolerance to stillness and silence',
     iconName: 'meditation',
     route: '/train/boredom',
+    duration: '2 – 20 MIN',
   },
   {
     title: 'Breathing',
     subtitle: 'Physiological sighs, box breathing, and more',
     iconName: 'weather-windy',
     route: '/train/breathing',
+    duration: '2 – 10 MIN',
   },
 ];
+
+function getDayName(): string {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long' });
+}
+
+function getDateLabel(): string {
+  return new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric' }).toUpperCase();
+}
 
 export default function TrainScreen() {
   const colorScheme = useColorScheme();
@@ -39,32 +51,31 @@ export default function TrainScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.header, { color: colors.text }]}>Train Your Mind</Text>
-        <Text style={[styles.subheader, { color: colors.textMuted }]}>
-          Choose a mental exercise to begin
-        </Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={[styles.dateLabel, { color: colors.textMuted }]}>{getDateLabel()}</Text>
+        <Text style={[styles.dayName, { color: colors.text }]}>{getDayName()}</Text>
 
-        {trainCards.map((card) => (
-          <Pressable
-            key={card.title}
-            style={[
-              styles.card,
-              {
-                backgroundColor: colors.surface,
-                borderColor: colors.border,
-              },
-            ]}
-            onPress={() => router.push(card.route as any)}>
-            <ProtocolIcon name={card.iconName} />
-            <View style={styles.cardText}>
+        <View style={styles.cardList}>
+          {trainCards.map((card) => (
+            <Pressable
+              key={card.title}
+              style={[styles.card, { backgroundColor: colors.surface }]}
+              onPress={() => router.push(card.route as any)}>
+              <View style={styles.cardTop}>
+                <Text style={[styles.cardDuration, { color: colors.primary }]}>
+                  {card.duration}
+                </Text>
+              </View>
               <Text style={[styles.cardTitle, { color: colors.text }]}>{card.title}</Text>
               <Text style={[styles.cardSubtitle, { color: colors.textMuted }]}>
                 {card.subtitle}
               </Text>
-            </View>
-          </Pressable>
-        ))}
+              <View style={[styles.cardIconRow, { backgroundColor: colors.background }]}>
+                <ProtocolIcon name={card.iconName} />
+              </View>
+            </Pressable>
+          ))}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -72,19 +83,49 @@ export default function TrainScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  content: { padding: Spacing.lg, paddingTop: Spacing.xl },
-  header: { fontSize: 28, fontWeight: '700', marginBottom: Spacing.xs },
-  subheader: { fontSize: 16, marginBottom: Spacing.xl },
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    marginBottom: Spacing.md,
-    gap: Spacing.md,
+  content: { paddingHorizontal: Spacing.lg, paddingTop: Spacing.xl, paddingBottom: 100 },
+  dateLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    marginBottom: 2,
   },
-  cardText: { flex: 1 },
-  cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 2 },
-  cardSubtitle: { fontSize: 14 },
+  dayName: {
+    fontSize: 34,
+    fontWeight: '800',
+    marginBottom: Spacing.xl,
+  },
+  cardList: { gap: Spacing.md },
+  card: {
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  cardTop: {
+    marginBottom: Spacing.sm,
+  },
+  cardDuration: {
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+  },
+  cardTitle: {
+    fontSize: 24,
+    fontWeight: '800',
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 15,
+    lineHeight: 21,
+    marginBottom: Spacing.lg,
+  },
+  cardIconRow: {
+    alignSelf: 'flex-start',
+    padding: Spacing.sm + 2,
+    borderRadius: BorderRadius.md,
+  },
 });
