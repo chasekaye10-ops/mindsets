@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -9,12 +9,16 @@ import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useAudioPlayer } from '@/hooks/use-audio-player';
 import { saveSession } from '@/db/schema';
 import { walkingMeditations, cognitiveWorkouts } from '@/data/protocols';
+import { SessionRating } from '@/components/session-rating';
+
+type Phase = 'playing' | 'rating' | 'done';
 
 export default function AudioSession() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
   const { id } = useLocalSearchParams<{ id: string }>();
   const player = useAudioPlayer();
+  const [phase, setPhase] = useState<Phase>('playing');
 
   const allProtocols = [...walkingMeditations, ...cognitiveWorkouts];
   const protocol = allProtocols.find((p) => p.id === id);
@@ -28,13 +32,20 @@ export default function AudioSession() {
     };
   }, []);
 
-  async function handleFinish() {
+  async function handleEndSession() {
+    await player.pause();
+    setPhase('rating');
+  }
+
+  async function handleRate(rating: number) {
     await player.unload();
     if (protocol) {
-      await saveSession('walk', protocol.duration * 60, 5);
+      const type = protocol.category === 'walk' ? 'walk' : 'breathing';
+      await saveSession(type, protocol.duration * 60, rating);
     }
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.back();
+    setPhase('done');
+    setTimeout(() => router.back(), 800);
   }
 
   function formatMs(ms: number): string {
@@ -56,6 +67,19 @@ export default function AudioSession() {
     );
   }
 
+  if (phase === 'rating') {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+        <SessionRating
+          title="Session Complete"
+          subtitle={`${protocol.name} — ${protocol.duration} min`}
+          question="How was that session?"
+          onRate={handleRate}
+        />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <Pressable style={styles.backBtn} onPress={() => { player.unload(); router.back(); }}>
@@ -72,7 +96,6 @@ export default function AudioSession() {
           {protocol.instructions}
         </Text>
 
-        {/* Progress ring */}
         <View style={[styles.ring, { borderColor: colors.surfaceAlt }]}>
           <View
             style={[styles.ringProgress, {
@@ -91,7 +114,6 @@ export default function AudioSession() {
           </Text>
         </View>
 
-        {/* Controls */}
         <View style={styles.controls}>
           <Pressable
             style={[styles.playBtn, { backgroundColor: colors.primary }]}
@@ -104,7 +126,7 @@ export default function AudioSession() {
           </Pressable>
         </View>
 
-        <Pressable style={[styles.finishBtn, { borderColor: colors.border }]} onPress={handleFinish}>
+        <Pressable style={[styles.finishBtn, { borderColor: colors.border }]} onPress={handleEndSession}>
           <Text style={[styles.finishText, { color: colors.textMuted }]}>End Session</Text>
         </Pressable>
       </View>
@@ -120,37 +142,12 @@ const styles = StyleSheet.create({
   duration: { fontSize: 12, fontWeight: '700', letterSpacing: 1.2, marginBottom: Spacing.xs },
   title: { fontSize: 28, fontWeight: '800', marginBottom: Spacing.sm, textAlign: 'center' },
   instructions: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.xl, paddingHorizontal: Spacing.md },
-  ring: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.xl,
-  },
-  ringProgress: {
-    position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 8,
-  },
+  ring: { width: 200, height: 200, borderRadius: 100, borderWidth: 8, justifyContent: 'center', alignItems: 'center', marginBottom: Spacing.xl },
+  ringProgress: { position: 'absolute', width: 200, height: 200, borderRadius: 100, borderWidth: 8 },
   time: { fontSize: 36, fontWeight: '800' },
   timeTotal: { fontSize: 14 },
   controls: { flexDirection: 'row', gap: Spacing.lg, marginBottom: Spacing.xl },
-  playBtn: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  finishBtn: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.full,
-    borderWidth: 1,
-  },
+  playBtn: { width: 72, height: 72, borderRadius: 36, justifyContent: 'center', alignItems: 'center' },
+  finishBtn: { paddingVertical: Spacing.sm, paddingHorizontal: Spacing.lg, borderRadius: BorderRadius.full, borderWidth: 1 },
   finishText: { fontSize: 14, fontWeight: '500' },
 });

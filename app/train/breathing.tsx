@@ -10,7 +10,9 @@ import { saveSession } from '@/db/schema';
 import { breathingProtocols, Protocol } from '@/data/protocols';
 import { ProtocolIcon } from '@/components/protocol-icon';
 
-type Phase = 'select' | 'active' | 'done';
+import { SessionRating } from '@/components/session-rating';
+
+type Phase = 'select' | 'active' | 'rating' | 'done';
 
 export default function BreathingSession() {
   const colorScheme = useColorScheme();
@@ -45,17 +47,22 @@ export default function BreathingSession() {
   }
 
   async function completeSession(protocol: Protocol, duration: number) {
-    await saveSession('breathing', duration, 5);
-    setPhase('done');
+    setPhase('rating');
   }
 
   function endEarly() {
     if (timerRef.current) clearInterval(timerRef.current);
+    setPhase('rating');
+  }
+
+  async function handleRate(rating: number) {
     if (selected) {
-      const elapsed = selected.duration * 60 - timeLeft;
-      saveSession('breathing', elapsed, 3);
+      const duration = selected.duration * 60 - Math.max(timeLeft, 0);
+      await saveSession('breathing', duration, rating);
     }
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setPhase('done');
+    setTimeout(() => router.back(), 800);
   }
 
   function formatTime(seconds: number): string {
@@ -115,19 +122,13 @@ export default function BreathingSession() {
         </View>
       )}
 
-      {phase === 'done' && (
-        <View style={styles.centered}>
-          <MaterialCommunityIcons name="check-circle-outline" size={56} color={colors.success} />
-          <Text style={[styles.title, { color: colors.text, marginTop: Spacing.md }]}>Breathing Complete</Text>
-          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-            {selected?.name} — your nervous system thanks you.
-          </Text>
-          <Pressable
-            style={[styles.startBtn, { backgroundColor: colors.primary }]}
-            onPress={() => router.back()}>
-            <Text style={styles.startBtnText}>Back to Training</Text>
-          </Pressable>
-        </View>
+      {phase === 'rating' && (
+        <SessionRating
+          title="Breathing Complete"
+          subtitle={selected?.name ?? 'Session finished'}
+          question="How do you feel?"
+          onRate={handleRate}
+        />
       )}
     </SafeAreaView>
   );

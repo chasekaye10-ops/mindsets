@@ -5,11 +5,14 @@ import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { getDB } from '@/db/schema';
 import { calculateMentalFitnessScore, getAdaptiveRecommendation } from '@/utils/scoring';
+import { calculateStreak, getLongestStreak } from '@/utils/streaks';
+import { FocusChart } from '@/components/focus-chart';
 
 interface Stats {
   totalSessions: number;
   totalMinutes: number;
   currentStreak: number;
+  longestStreak: number;
   avgFocusRating: number;
   mentalFitnessScore: number;
   recommendation: string;
@@ -22,6 +25,7 @@ export default function ProgressScreen() {
     totalSessions: 0,
     totalMinutes: 0,
     currentStreak: 0,
+    longestStreak: 0,
     avgFocusRating: 0,
     mentalFitnessScore: 0,
     recommendation: 'Complete your first session to get started',
@@ -60,10 +64,14 @@ export default function ProgressScreen() {
         challengesTotal: challengesTotal?.count ?? 0,
       });
 
+      const streak = await calculateStreak();
+      const longest = await getLongestStreak();
+
       setStats({
         totalSessions: sessionCount?.count ?? 0,
         totalMinutes: Math.round(totalMins?.total ?? 0),
-        currentStreak: 0,
+        currentStreak: streak,
+        longestStreak: longest,
         avgFocusRating: Math.round((avgRating?.avg ?? 0) * 10) / 10,
         mentalFitnessScore: score,
         recommendation: getAdaptiveRecommendation(focusSessions),
@@ -113,8 +121,11 @@ export default function ProgressScreen() {
           </Text>
         </View>
 
+        {/* Chart */}
+        <FocusChart />
+
         {/* Stats */}
-        <Text style={[styles.sectionLabel, { color: colors.textMuted, marginTop: Spacing.xl, marginBottom: Spacing.md }]}>
+        <Text style={[styles.sectionLabel, { color: colors.textMuted, marginTop: Spacing.lg, marginBottom: Spacing.md }]}>
           MY STATS
         </Text>
         <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -122,8 +133,14 @@ export default function ProgressScreen() {
         <View style={styles.statsGrid}>
           <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>ACTIVE{'\n'}STREAK</Text>
+            <Text style={[styles.statValue, { color: stats.currentStreak > 0 ? colors.primary : colors.text }]}>
+              {stats.currentStreak > 0 ? `${stats.currentStreak}d` : '-'}
+            </Text>
+          </View>
+          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.statLabel, { color: colors.textMuted }]}>LONGEST{'\n'}STREAK</Text>
             <Text style={[styles.statValue, { color: colors.text }]}>
-              {stats.currentStreak > 0 ? `${stats.currentStreak} days` : '-'}
+              {stats.longestStreak > 0 ? `${stats.longestStreak}d` : '-'}
             </Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
@@ -136,12 +153,6 @@ export default function ProgressScreen() {
             <Text style={[styles.statLabel, { color: colors.textMuted }]}>TOTAL{'\n'}MINUTES</Text>
             <Text style={[styles.statValue, { color: colors.text }]}>
               {stats.totalMinutes > 0 ? stats.totalMinutes : '-'}
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statLabel, { color: colors.textMuted }]}>AVG{'\n'}RATING</Text>
-            <Text style={[styles.statValue, { color: colors.text }]}>
-              {stats.avgFocusRating > 0 ? `${stats.avgFocusRating}/5` : '-'}
             </Text>
           </View>
         </View>

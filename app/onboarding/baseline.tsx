@@ -5,6 +5,7 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setupAllNotifications } from '@/utils/notifications';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -41,6 +42,8 @@ export default function BaselineTest() {
     await AsyncStorage.setItem('onboarding_complete', 'true');
     await AsyncStorage.setItem('baseline_focus_seconds', String(elapsed));
     await AsyncStorage.setItem('trial_start', new Date().toISOString());
+    // Set up push notifications (morning reminder, streak alert, trial expiry)
+    await setupAllNotifications();
     router.replace('/(tabs)');
   }
 
