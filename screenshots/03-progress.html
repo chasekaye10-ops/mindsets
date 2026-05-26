@@ -1,0 +1,44 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: linear-gradient(180deg, #BE78F0 0%, #9B5FD8 100%); width: 1284px; height: 2778px; overflow: hidden; position: relative; }
+  .container { padding: 140px 100px 0; text-align: center; color: white; }
+  .headline { font-size: 110px; font-weight: 900; line-height: 1.05; letter-spacing: -2px; margin-bottom: 40px; }
+  .sub { font-size: 48px; font-weight: 500; opacity: 0.85; line-height: 1.3; margin-bottom: 100px; }
+  .phone { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 1000px; background: #F5F0EB; border-radius: 70px 70px 0 0; padding: 80px 60px 0; height: 1750px; box-shadow: 0 -40px 80px rgba(0,0,0,0.25); }
+  .dash-title { text-align: center; font-size: 64px; font-weight: 800; color: #1A1A1A; margin-bottom: 60px; }
+  .score-card { background: white; border-radius: 50px; padding: 70px 40px; text-align: center; box-shadow: 0 6px 30px rgba(0,0,0,0.05); }
+  .score-label { font-size: 24px; font-weight: 700; letter-spacing: 3px; color: #9B9590; margin-bottom: 40px; }
+  .ring { width: 480px; height: 480px; border-radius: 240px; border: 18px solid #EDE8E3; border-top-color: #BE78F0; border-right-color: #BE78F0; transform: rotate(-45deg); margin: 0 auto; display: flex; align-items: center; justify-content: center; position: relative; }
+  .score-val { position: absolute; transform: rotate(45deg); font-size: 140px; font-weight: 800; color: #1A1A1A; }
+  .chart-card { background: white; border-radius: 50px; padding: 50px 40px; margin-top: 32px; box-shadow: 0 6px 30px rgba(0,0,0,0.05); }
+  .chart-label { font-size: 22px; font-weight: 700; letter-spacing: 3px; color: #9B9590; margin-bottom: 40px; }
+  .bars { display: flex; align-items: flex-end; justify-content: space-between; height: 280px; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .bar { width: 36px; border-radius: 18px; background: #BE78F0; margin-bottom: 16px; }
+  .day { font-size: 24px; color: #9B9590; font-weight: 500; }
+  .day-active { color: #BE78F0; font-weight: 700; }
+</style></head><body>
+<div class="container">
+  <div class="headline">Watch your<br/>focus grow.</div>
+  <div class="sub">Track every session.<br/>See the progress.</div>
+</div>
+<div class="phone">
+  <div class="dash-title">Dashboard</div>
+  <div class="score-card">
+    <div class="score-label">MINDSET SCORE</div>
+    <div class="ring"><div class="score-val">72%</div></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-label">LAST 7 DAYS</div>
+    <div class="bars">
+      <div class="bar-col"><div class="bar" style="height:80px"></div><div class="day">M</div></div>
+      <div class="bar-col"><div class="bar" style="height:120px"></div><div class="day">T</div></div>
+      <div class="bar-col"><div class="bar" style="height:60px"></div><div class="day">W</div></div>
+      <div class="bar-col"><div class="bar" style="height:160px"></div><div class="day">T</div></div>
+      <div class="bar-col"><div class="bar" style="height:200px"></div><div class="day">F</div></div>
+      <div class="bar-col"><div class="bar" style="height:140px"></div><div class="day">S</div></div>
+      <div class="bar-col"><div class="bar" style="height:260px"></div><div class="day day-active">S</div></div>
+    </div>
+  </div>
+</div>
+</body></html>

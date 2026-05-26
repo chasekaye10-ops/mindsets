@@ -1,7 +1,9 @@
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { useState } from 'react';
+import { StyleSheet, View, Text, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import * as Haptics from 'expo-haptics';
 import { Colors, Spacing, BorderRadius } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { usePremium } from '@/hooks/use-premium';
@@ -18,13 +20,42 @@ const features = [
 export default function PaywallScreen() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? 'light'];
-  const { unlock } = usePremium();
+  const { purchase, restore, price } = usePremium();
+  const [purchasing, setPurchasing] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   async function handlePurchase() {
-    // In production: RevenueCat purchase flow
-    // For now: simulate purchase
-    await unlock();
-    router.back();
+    setPurchasing(true);
+    try {
+      const success = await purchase();
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        router.back();
+      }
+    } catch {
+      Alert.alert('Purchase failed', 'Please try again.');
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  async function handleRestore() {
+    setRestoring(true);
+    try {
+      const success = await restore();
+      if (success) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Restored', 'Your purchase has been restored.', [
+          { text: 'OK', onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert('No purchase found', 'No previous purchase was found on this Apple ID.');
+      }
+    } catch {
+      Alert.alert('Restore failed', 'Please try again.');
+    } finally {
+      setRestoring(false);
+    }
   }
 
   return (
@@ -34,7 +65,7 @@ export default function PaywallScreen() {
       </Pressable>
 
       <View style={styles.content}>
-        <View style={[styles.iconContainer, { backgroundColor: colors.primary + '10' }]}>
+        <View style={[styles.iconContainer, { backgroundColor: colors.primary + '15' }]}>
           <MaterialCommunityIcons name="lock-open-outline" size={40} color={colors.primary} />
         </View>
 
@@ -53,18 +84,27 @@ export default function PaywallScreen() {
         </View>
 
         <View style={styles.priceBox}>
-          <Text style={[styles.price, { color: colors.primary }]}>$4.99</Text>
+          <Text style={[styles.price, { color: colors.primary }]}>{price}</Text>
           <Text style={[styles.priceLabel, { color: colors.textMuted }]}>one-time</Text>
         </View>
       </View>
 
       <View style={styles.footer}>
-        <Pressable style={[styles.purchaseBtn, { backgroundColor: colors.primary }]} onPress={handlePurchase}>
-          <Text style={styles.purchaseBtnText}>Unlock Full Access</Text>
+        <Pressable
+          style={[styles.purchaseBtn, { backgroundColor: colors.primary, opacity: purchasing ? 0.7 : 1 }]}
+          onPress={handlePurchase}
+          disabled={purchasing}>
+          {purchasing ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.purchaseBtnText}>Unlock Full Access</Text>
+          )}
         </Pressable>
-        <Text style={[styles.terms, { color: colors.textMuted }]}>
-          Restore purchase  |  Terms  |  Privacy
-        </Text>
+        <Pressable onPress={handleRestore} disabled={restoring}>
+          <Text style={[styles.restoreText, { color: colors.textMuted }]}>
+            {restoring ? 'Restoring...' : 'Restore purchase'}
+          </Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -95,7 +135,9 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md + 4,
     borderRadius: BorderRadius.full,
     alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 60,
   },
   purchaseBtnText: { color: '#fff', fontSize: 19, fontWeight: '700' },
-  terms: { fontSize: 12, textAlign: 'center' },
+  restoreText: { fontSize: 14, textAlign: 'center', fontWeight: '500' },
 });

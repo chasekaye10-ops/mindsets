@@ -6,6 +6,7 @@ import 'react-native-reanimated';
 
 import { Colors } from '@/constants/theme';
 import { useOnboarding } from '@/hooks/use-onboarding';
+import { configurePurchases } from '@/hooks/use-premium';
 
 const AppTheme = {
   ...DefaultTheme,
@@ -25,6 +26,10 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const { isOnboardingComplete, isLoading } = useOnboarding();
+
+  useEffect(() => {
+    configurePurchases();
+  }, []);
 
   useEffect(() => {
     if (!isLoading && isOnboardingComplete === false) {
