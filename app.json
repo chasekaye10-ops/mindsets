@@ -13,7 +13,6 @@
       "bundleIdentifier": "com.mindsets.app",
       "buildNumber": "1",
       "infoPlist": {
-        "NSUserTrackingUsageDescription": "This allows us to improve your experience.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
